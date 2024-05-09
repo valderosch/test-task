@@ -1,25 +1,43 @@
 package com.testtask.testtask.controller;
+import com.testtask.testtask.exceptions.NoUsersException;
+import com.testtask.testtask.exceptions.UserAdultException;
 import com.testtask.testtask.exceptions.UserAlreadyExistException;
+import com.testtask.testtask.exceptions.UserIsNotFoundException;
 import com.testtask.testtask.model.User;
-import com.testtask.testtask.repository.UserRepository;
 import com.testtask.testtask.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.List;
+
 @RestController
 @RequestMapping("/users")
 public class UserController {
 
+    @Autowired
     private UserService userService;
 
     @GetMapping("/all")
     public ResponseEntity getAllUsers() {
         try {
-
-            return ResponseEntity.ok("All users");
+            List<User> users = userService.getAllUsers();
+            return ResponseEntity.ok(users);
+        } catch (NoUsersException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Get All Users | Some Error");
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping
+    public ResponseEntity getUserById(@RequestParam("id") Long id) {
+        try {
+            return ResponseEntity.ok(userService.getUserById(id));
+        }catch (UserIsNotFoundException e){
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e){
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
@@ -30,26 +48,42 @@ public class UserController {
             return ResponseEntity.ok("New user created. Everything is OK");
         } catch (UserAlreadyExistException e) {
             return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (UserAdultException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Create New User | Some Error");
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/update/{id}")
+    public ResponseEntity updateUserById(@PathVariable Long id, @RequestBody User updatedUser) {
+        try {
+            User updatedUserInfo = userService.updateUserById(id, updatedUser);
+            return ResponseEntity.ok(updatedUserInfo);
+        } catch (UserIsNotFoundException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
     @PostMapping("/update/all")
-    public ResponseEntity updateUserById(){
+    public ResponseEntity updateAllUsers(@RequestBody User updatedUser) {
         try {
-            return ResponseEntity.ok("Server is going to update a user");
+            userService.updateAllUsers(updatedUser);
+            return ResponseEntity.ok("All users updated successfully");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Update User | Some Error");
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 
-    @DeleteMapping
-    public ResponseEntity deleteUserById(){
+    @DeleteMapping("/{id}")
+    public ResponseEntity deleteUserById(@PathVariable Long id){
         try {
-            return ResponseEntity.ok("Server is going to delete a user #");
+            userService.deleteUserById(id);
+            return ResponseEntity.ok("User was deleted.");
         } catch (Exception e) {
-            return ResponseEntity.badRequest().body("Delete User | Some Error while deleting user");
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }
