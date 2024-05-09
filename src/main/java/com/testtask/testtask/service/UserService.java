@@ -1,8 +1,5 @@
 package com.testtask.testtask.service;
-import com.testtask.testtask.exceptions.NoUsersException;
-import com.testtask.testtask.exceptions.UserAdultException;
-import com.testtask.testtask.exceptions.UserAlreadyExistException;
-import com.testtask.testtask.exceptions.UserIsNotFoundException;
+import com.testtask.testtask.exceptions.*;
 import com.testtask.testtask.model.User;
 import com.testtask.testtask.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -121,5 +118,12 @@ public class UserService {
             }
         }
         userRepository.saveAll(users);
+    }
+
+    public List<User> searchUsersByBirthDateRange(Date fromDate, Date toDate) throws InvalidDateRangeException {
+        if (fromDate.after(toDate)) {
+            throw new InvalidDateRangeException("'From' date must be before 'To' date");
+        }
+        return userRepository.findByBirthDateBetween(fromDate, toDate);
     }
 }

@@ -6,9 +6,11 @@ import com.testtask.testtask.exceptions.UserIsNotFoundException;
 import com.testtask.testtask.model.User;
 import com.testtask.testtask.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.format.annotation.DateTimeFormat;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.Date;
 import java.util.List;
 
 @RestController
@@ -82,6 +84,18 @@ public class UserController {
         try {
             userService.deleteUserById(id);
             return ResponseEntity.ok("User was deleted.");
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @GetMapping("/search")
+    public ResponseEntity searchUsersByBirthDateRange(
+            @RequestParam("from") @DateTimeFormat(pattern = "yyyy-MM-dd") Date fromDate,
+            @RequestParam("to") @DateTimeFormat(pattern = "yyyy-MM-dd") Date toDate) {
+        try {
+            List<User> users = userService.searchUsersByBirthDateRange(fromDate, toDate);
+            return ResponseEntity.ok(users);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
