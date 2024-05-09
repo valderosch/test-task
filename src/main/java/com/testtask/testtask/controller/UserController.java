@@ -1,6 +1,8 @@
 package com.testtask.testtask.controller;
+import com.testtask.testtask.exceptions.UserAlreadyExistException;
 import com.testtask.testtask.model.User;
 import com.testtask.testtask.repository.UserRepository;
+import com.testtask.testtask.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -9,12 +11,12 @@ import org.springframework.web.bind.annotation.*;
 @RequestMapping("/users")
 public class UserController {
 
-    @Autowired
-    private UserRepository userRepository;
+    private UserService userService;
 
     @GetMapping("/all")
     public ResponseEntity getAllUsers() {
         try {
+
             return ResponseEntity.ok("All users");
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Get All Users | Some Error");
@@ -24,8 +26,10 @@ public class UserController {
     @PostMapping("/new")
     public ResponseEntity createNewUser(@RequestBody User user ){
         try {
-            userRepository.save(user);
-            return ResponseEntity.ok("Server is going to create a new user");
+            userService.createUser(user);
+            return ResponseEntity.ok("New user created. Everything is OK");
+        } catch (UserAlreadyExistException e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
         } catch (Exception e) {
             return ResponseEntity.badRequest().body("Create New User | Some Error");
         }
